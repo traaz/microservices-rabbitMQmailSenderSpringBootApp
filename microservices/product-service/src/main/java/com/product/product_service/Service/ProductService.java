@@ -16,7 +16,6 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    @CacheEvict(value = "product", allEntries = true)
     public void addProduct(AddProductRequest addProductRequest){
         productRepository.addProduct(addProductRequest);
     }

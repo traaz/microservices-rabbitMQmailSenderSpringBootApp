@@ -16,7 +16,6 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    @CacheEvict(value = "customer", allEntries = true)
     public void addCustomer(AddCustomerRequest addCustomerRequest){
         customerRepository.addCustomer(addCustomerRequest);
     }
