@@ -37,38 +37,46 @@ public class OrderService {
         this.productClient = productClient;
         this.directExchange = directExchange;
     }
+
     public void addOrder(AddOrderRequest addOrderRequest) {
+
         log.info("Siparis istegi alindi");
         this.orderRepository.addOrder(addOrderRequest);
         log.info("Siparis db'ye yazildi customerId: {}, productId: {}", addOrderRequest.getCustomerId(), addOrderRequest.getProductId());
 
-        CustomerResponse customer;
+        CustomerResponse customer = getCustomerById(addOrderRequest.getCustomerId());
+        ProductResponse product = getProductById(addOrderRequest.getProductId());
+
+        OrderMessage message= createMessageForQueue(customer, product);
+
+        sendMessageToQueue(message);
+    }
+
+    public CustomerResponse getCustomerById(int id){
+
         try{
-            customer = customerClient.getCustomerById(addOrderRequest.getCustomerId());
+            CustomerResponse customer = customerClient.getCustomerById(id);
             log.info("Customer bilgisi alindi email: {}, id:{}", customer.getEmail(),customer.getId());
+            return customer;
         } catch (Exception e) {
             log.error("Customer bilgisi alinamadi {}" ,e.getMessage());
             throw new RuntimeException("Customer bilgisi alınamadı");
         }
+    }
 
-        ProductResponse product;
+    public ProductResponse getProductById(int id){
+
         try{
-            product = productClient.getProductById(addOrderRequest.getProductId());
+            ProductResponse product = productClient.getProductById(id);
             log.info("Product bilgisi alindi id:{}, productName: {}, price: {}", product.getId(), product.getProductName(), product.getPrice());
+            return product;
         } catch (Exception e) {
             log.error("Product bilgisi alinamadi {}" ,e.getMessage());
             throw new RuntimeException("Product bilgisi alınamadı");
         }
-
-        sendMessageToQueue(customer, product);
     }
 
-    public void sendMessageToQueue(CustomerResponse customer, ProductResponse product){
-        OrderMessage message= new OrderMessage();
-        message.setEmail(customer.getEmail());
-        message.setPrice(product.getPrice());
-        message.setProductName(product.getProductName());
-        log.info("Kuyruk mesaji hazirlandi");
+    public void sendMessageToQueue(OrderMessage message){
 
         try{
             // Mesaji kuyruga gonder. messagı otomatik jsona cevircek rabbitmq'daki jsonconverter
@@ -82,8 +90,18 @@ public class OrderService {
             log.error("Mesaj kuyruga iletilmedi: {}", e.getMessage());
             throw new RuntimeException("Mesaj iletilmedi");
         }
-
     }
+
+    public OrderMessage createMessageForQueue(CustomerResponse customer, ProductResponse product){
+        OrderMessage message= new OrderMessage();
+        message.setEmail(customer.getEmail());
+        message.setPrice(product.getPrice());
+        message.setProductName(product.getProductName());
+        log.info("Kuyruk mesaji hazirlandi");
+        return message;
+    }
+
+
 
 
 
