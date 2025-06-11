@@ -11,6 +11,7 @@
         <module name="order-service" />
         <module name="customer-service" />
         <module name="mail-service" />
+        <module name="eureka-server" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -21,6 +22,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="config-server" options="-parameters" />
       <module name="customer-service" options="-parameters" />
+      <module name="eureka-server" options="-parameters" />
       <module name="mail-service" options="-parameters" />
       <module name="order-service" options="-parameters" />
       <module name="product-service" options="-parameters" />

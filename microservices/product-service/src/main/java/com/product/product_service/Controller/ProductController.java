@@ -3,6 +3,7 @@ package com.product.product_service.Controller;
 import com.product.product_service.DTOs.AddProductRequest;
 import com.product.product_service.Model.Product;
 import com.product.product_service.Service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -17,7 +18,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public void addProduct(@RequestBody AddProductRequest addProductRequest){
+    public void addProduct(@Valid @RequestBody AddProductRequest addProductRequest){
         productService.addProduct(addProductRequest);
     }
     @GetMapping("/{id}")
