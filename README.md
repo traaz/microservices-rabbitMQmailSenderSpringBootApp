@@ -6,6 +6,8 @@ Postgresql
 
 OpenFeign
 
+Eureka
+
 ConfigServer
 
 Docker
