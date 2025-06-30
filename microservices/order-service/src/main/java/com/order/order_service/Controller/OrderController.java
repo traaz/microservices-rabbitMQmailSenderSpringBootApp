@@ -17,9 +17,7 @@ public class OrderController {
     }
     @PostMapping()
     public void addOrder(@RequestBody AddOrderRequest addOrderRequest){
-        System.out.println("add method");
         orderService.addOrder(addOrderRequest);
-        System.out.println("exit method");
 
     }
 }

@@ -35,10 +35,10 @@ public class OrderRepository {
             MapSqlParameterSource insertParamSource = new MapSqlParameterSource(params);
 
             namedParameterJdbcTemplate.update(addOrderQuery, insertParamSource);
+            log.info("Siparis db'ye yazildi customerId: {}, productId: {}", addOrderRequest.getCustomerId(), addOrderRequest.getProductId());
 
         } catch (Exception e) {
             log.error("Sipariş verilemedi, DB hatası: {}", e.getMessage(), e);
-            throw new RuntimeException("Sipariş verilemedi");
         }
 
 

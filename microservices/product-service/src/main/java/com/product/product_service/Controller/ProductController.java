@@ -18,7 +18,15 @@ public class ProductController {
     }
 
     @PostMapping
-    public void addProduct(@Valid @RequestBody AddProductRequest addProductRequest){
+    public void addProduct(@RequestBody AddProductRequest addProductRequest){
+        //guard clause
+        if(addProductRequest.getProductName() == null || addProductRequest.getProductName().isBlank()){
+            throw new IllegalArgumentException("Ürün ismi boş olamaz");
+        }
+        if(addProductRequest.getPrice() == null || addProductRequest.getPrice() <=0){
+            throw new IllegalArgumentException("Fiyat boş olamaz ve sıfırdan büyük olmalıdır");
+
+        }
         productService.addProduct(addProductRequest);
     }
     @GetMapping("/{id}")

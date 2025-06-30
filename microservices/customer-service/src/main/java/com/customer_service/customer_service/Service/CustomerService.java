@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class CustomerService {
     private static final Logger log = LoggerFactory.getLogger(CustomerService.class);
@@ -27,13 +29,13 @@ public class CustomerService {
     public Customer getCustomerById(int id){
 
         log.info("Customer bilgisi istendi, ürün id: {}", id);
-        Customer customer = customerRepository.getCustomerById(id);
-        if(customer != null){
-            log.info("Ürün bilgisi getirildi, id: {}, name: {}", customer.getId(), customer.getEmail());
-            return customer;
+        Optional<Customer> customer = customerRepository.getCustomerById(id);
+        if(customer.isPresent()){
+            log.info("Customer bilgisi getirildi, id: {}, name: {}", customer.get().getId(), customer.get().getEmail());
+            return customer.get();
         }else{
-            log.warn("Ürün bilgisi bulunamadı, id: {}", id);
-            return null;
+            log.warn("Customer bilgisi bulunamadı, id: {}", id);
+            throw new IllegalArgumentException("Customer bulunamadı, id: " + id);
         }
 
     }

@@ -5,9 +5,7 @@ import jakarta.validation.constraints.*;
 
 
 public class AddProductRequest {
-    @NotEmpty(message = "product name gereklidir")
     private String productName;
-    @NotNull(message = "price gereklidir")
     private Double price;
 
     public AddProductRequest(String productName, Double price) {

@@ -3,11 +3,12 @@ package com.product.product_service.Service;
 import com.product.product_service.DTOs.AddProductRequest;
 import com.product.product_service.Model.Product;
 import com.product.product_service.Repository.ProductRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -30,13 +31,13 @@ public class ProductService {
     public Product getProductById(int id){
 
         log.info("Ürün bilgisi istendi, ürün id: {}", id);
-        Product product = productRepository.getProductById(id);
-        if(product != null){
-            log.info("Ürün bilgisi getirildi, id: {}, name: {}", product.getId(), product.getProductName());
-            return product;
+        Optional<Product> product = productRepository.getProductById(id);
+        if(product.isPresent()){
+            log.info("Ürün bilgisi getirildi, id: {}, name: {}", product.get().getId(), product.get().getProductName());
+            return product.get();
         }else{
             log.warn("Ürün bilgisi bulunamadı, id: {}", id);
-            return null;
+            throw new IllegalArgumentException("Ürün bulunamadı, id: " + id);
         }
 
     }

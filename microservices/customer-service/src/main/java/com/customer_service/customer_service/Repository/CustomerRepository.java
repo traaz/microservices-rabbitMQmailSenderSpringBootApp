@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class CustomerRepository {
@@ -40,15 +41,16 @@ public class CustomerRepository {
 
     }
 
-    public Customer getCustomerById(int id){
+    public Optional<Customer> getCustomerById(int id){
         try{
             String getCustomerByIdQuery = "SELECT * FROM CUSTOMERS WHERE id = :idValue";
             Map<String, Object> params = new HashMap<>();
             params.put("idValue", id);
             MapSqlParameterSource paramSource = new MapSqlParameterSource(params);
-            return namedParameterJdbcTemplate.queryForObject(getCustomerByIdQuery, paramSource,  new BeanPropertyRowMapper<>(Customer.class));
+            Customer customer =  namedParameterJdbcTemplate.queryForObject(getCustomerByIdQuery, paramSource,  new BeanPropertyRowMapper<>(Customer.class));
+            return Optional.ofNullable(customer);
         } catch (Exception e) {
-            return null;
+            return Optional.empty();
         }
 
     }

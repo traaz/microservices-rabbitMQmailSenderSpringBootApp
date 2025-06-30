@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class ProductRepository {
@@ -41,15 +42,16 @@ public class ProductRepository {
 
     }
 
-    public Product getProductById(int id) {
+    public Optional<Product> getProductById(int id) {
         try{
             String getProductByIdQuery = "SELECT * FROM PRODUCTS WHERE id = :idValue";
             Map<String, Object> params = new HashMap<>();
             params.put("idValue", id);
             MapSqlParameterSource paramSource = new MapSqlParameterSource(params);
-            return namedParameterJdbcTemplate.queryForObject(getProductByIdQuery, paramSource, new BeanPropertyRowMapper<>(Product.class));
+            Product product =  namedParameterJdbcTemplate.queryForObject(getProductByIdQuery, paramSource, new BeanPropertyRowMapper<>(Product.class));
+            return Optional.ofNullable(product);
         } catch (Exception e) {
-           return null;
+           return Optional.empty();
         }
 
     }

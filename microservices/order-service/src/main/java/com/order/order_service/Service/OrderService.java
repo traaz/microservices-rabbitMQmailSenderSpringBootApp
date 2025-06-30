@@ -8,11 +8,11 @@ import com.order.order_service.FlientClients.CustomerClient;
 import com.order.order_service.FlientClients.ProductClient;
 import com.order.order_service.RabbitMQConfig.RabbitMQConfig;
 import com.order.order_service.Repository.OrderRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 
@@ -30,7 +30,7 @@ public class OrderService {
                         RabbitTemplate rabbitTemplate,
                         CustomerClient customerClient,
                         ProductClient productClient,
-                        DirectExchange directExchange) {
+                        @Qualifier("orderExchange")  DirectExchange directExchange) {
         this.orderRepository = orderRepository;
         this.rabbitTemplate = rabbitTemplate;
         this.customerClient = customerClient;
@@ -42,7 +42,6 @@ public class OrderService {
 
         log.info("Siparis istegi alindi");
         this.orderRepository.addOrder(addOrderRequest);
-        log.info("Siparis db'ye yazildi customerId: {}, productId: {}", addOrderRequest.getCustomerId(), addOrderRequest.getProductId());
 
         CustomerResponse customer = getCustomerById(addOrderRequest.getCustomerId());
         ProductResponse product = getProductById(addOrderRequest.getProductId());
@@ -53,16 +52,16 @@ public class OrderService {
     }
 
     public CustomerResponse getCustomerById(int id){
-
-        try{
+        try {
             CustomerResponse customer = customerClient.getCustomerById(id);
-            log.info("Customer bilgisi alindi email: {}, id:{}", customer.getEmail(),customer.getId());
+            log.info("Customer bilgisi alindi email: {}, id:{}", customer.getEmail(), customer.getId());
             return customer;
         } catch (Exception e) {
-            log.error("Customer bilgisi alinamadi {}" ,e.getMessage());
+            log.error("Customer servis hatası: {}, id: {}", e.getMessage(), id);
             throw new RuntimeException("Customer bilgisi alınamadı");
         }
     }
+
 
     public ProductResponse getProductById(int id){
 
@@ -71,10 +70,20 @@ public class OrderService {
             log.info("Product bilgisi alindi id:{}, productName: {}, price: {}", product.getId(), product.getProductName(), product.getPrice());
             return product;
         } catch (Exception e) {
-            log.error("Product bilgisi alinamadi {}" ,e.getMessage());
+            log.error("Product bilgisi alinamadi: {}, id: {}" ,e.getMessage(), id);
             throw new RuntimeException("Product bilgisi alınamadı");
         }
     }
+
+    public OrderMessage createMessageForQueue(CustomerResponse customer, ProductResponse product){
+        OrderMessage message= new OrderMessage();
+        message.setEmail(customer.getEmail());
+        message.setPrice(product.getPrice());
+        message.setProductName(product.getProductName());
+        log.info("Kuyruk mesaji hazirlandi");
+        return message;
+    }
+
 
     public void sendMessageToQueue(OrderMessage message){
 
@@ -92,14 +101,6 @@ public class OrderService {
         }
     }
 
-    public OrderMessage createMessageForQueue(CustomerResponse customer, ProductResponse product){
-        OrderMessage message= new OrderMessage();
-        message.setEmail(customer.getEmail());
-        message.setPrice(product.getPrice());
-        message.setProductName(product.getProductName());
-        log.info("Kuyruk mesaji hazirlandi");
-        return message;
-    }
 
 
 

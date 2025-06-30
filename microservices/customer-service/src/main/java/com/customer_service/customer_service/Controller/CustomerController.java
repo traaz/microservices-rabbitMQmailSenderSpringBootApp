@@ -17,6 +17,9 @@ public class CustomerController {
 
     @PostMapping
     public void addCustomer(@RequestBody AddCustomerRequest addCustomerRequest){
+        if(addCustomerRequest.getEmail() == null || addCustomerRequest.getEmail().isBlank()){
+            throw new IllegalArgumentException("Mail ismi boş olamaz");
+        }
         customerService.addCustomer(addCustomerRequest);
     }
 
