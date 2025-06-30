@@ -4,6 +4,8 @@ Spring Boot & JDBC
 
 Postgresql
 
+Api Gateway
+
 OpenFeign
 
 Eureka
