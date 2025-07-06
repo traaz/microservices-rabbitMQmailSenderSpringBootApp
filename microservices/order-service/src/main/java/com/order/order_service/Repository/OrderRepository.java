@@ -39,6 +39,7 @@ public class OrderRepository {
 
         } catch (Exception e) {
             log.error("Sipariş verilemedi, DB hatası: {}", e.getMessage(), e);
+
         }
 
 
