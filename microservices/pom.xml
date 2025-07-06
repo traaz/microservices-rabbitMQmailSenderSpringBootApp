@@ -13,8 +13,8 @@
             <module>customer-service</module>
             <module>order-service</module>
             <module>mail-service</module>
-        <module>eureka-server</module>
-        <module>api-gateway</module>
+            <module>eureka-server</module>
+            <module>api-gateway</module>
             <!-- diğer servisler -->
     </modules>
 

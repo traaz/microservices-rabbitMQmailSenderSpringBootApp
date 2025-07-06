@@ -4,8 +4,8 @@ import com.order.order_service.DTOs.AddOrderRequest;
 import com.order.order_service.DTOs.CustomerResponse;
 import com.order.order_service.DTOs.OrderMessage;
 import com.order.order_service.DTOs.ProductResponse;
-import com.order.order_service.FlientClients.CustomerClient;
-import com.order.order_service.FlientClients.ProductClient;
+import com.order.order_service.FeignClients.CustomerClient;
+import com.order.order_service.FeignClients.ProductClient;
 import com.order.order_service.RabbitMQConfig.RabbitMQConfig;
 import com.order.order_service.Repository.OrderRepository;
 import org.slf4j.Logger;
@@ -41,10 +41,12 @@ public class OrderService {
     public void addOrder(AddOrderRequest addOrderRequest) {
 
         log.info("Siparis istegi alindi");
-        this.orderRepository.addOrder(addOrderRequest);
+
 
         CustomerResponse customer = getCustomerById(addOrderRequest.getCustomerId());
         ProductResponse product = getProductById(addOrderRequest.getProductId());
+
+        this.orderRepository.addOrder(addOrderRequest);
 
         OrderMessage message= createMessageForQueue(customer, product);
 
@@ -52,27 +54,38 @@ public class OrderService {
     }
 
     public CustomerResponse getCustomerById(int id){
-        try {
-            CustomerResponse customer = customerClient.getCustomerById(id);
-            log.info("Customer bilgisi alindi email: {}, id:{}", customer.getEmail(), customer.getId());
-            return customer;
-        } catch (Exception e) {
-            log.error("Customer servis hatası: {}, id: {}", e.getMessage(), id);
-            throw new RuntimeException("Customer bilgisi alınamadı");
+
+        CustomerResponse customer = customerClient.getCustomerById(id);
+
+        if(customer.getEmail().equals("Fallback Customer Mail")){
+            log.info("fall back calisti customer");
         }
+        if(customer.getEmail() == null || customer.getEmail().isBlank()){
+            log.warn("customer bulunamadı, id: {}", id);
+            throw new IllegalArgumentException("Customer bulunamadı");
+        }
+
+        log.info("Customer bilgisi alindi email: {}, id:{}", customer.getEmail(), customer.getId());
+        return customer;
+
     }
 
 
     public ProductResponse getProductById(int id){
 
-        try{
+
             ProductResponse product = productClient.getProductById(id);
+
+            if(product.getProductName().equals("Fallback Product")){
+                log.info("fall back calisti");
+            }
+            if (product.getProductName() == null || product.getProductName().isBlank()) {
+                log.warn("Ürün bulunamadı, id: {}", id);
+                throw new IllegalArgumentException("Ürün bulunamadı");
+             }
             log.info("Product bilgisi alindi id:{}, productName: {}, price: {}", product.getId(), product.getProductName(), product.getPrice());
             return product;
-        } catch (Exception e) {
-            log.error("Product bilgisi alinamadi: {}, id: {}" ,e.getMessage(), id);
-            throw new RuntimeException("Product bilgisi alınamadı");
-        }
+
     }
 
     public OrderMessage createMessageForQueue(CustomerResponse customer, ProductResponse product){
