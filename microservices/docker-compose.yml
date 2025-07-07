@@ -9,10 +9,15 @@ services:
     ports:
       - 8888:8888
     depends_on:
-      - rabbitmq
-      - maildev
-      - redis
-      - zipkin
+      rabbitmq:
+        condition: service_started
+      maildev:
+        condition: service_started
+      redis:
+        condition: service_started
+      zipkin:
+        condition: service_started
+
 
   eureka-server:
     build:
@@ -20,6 +25,11 @@ services:
     container_name: eureka-service
     ports:
       - 8761:8761
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://eureka-server:8761/actuator/health" ]
+      interval: 10s #curl komutu 10 saniyede bir calisir.
+      timeout: 10s #istegin timeout suresi
+      retries: 10  #5 kez basarisiz olursa, container "unhealthy"  sayilir.
 
   api-gateway:
     build:
@@ -28,8 +38,8 @@ services:
     ports:
       - 8861:8861
     depends_on:
-      - eureka-server
-      - config-server
+      eureka-server:
+        condition: service_healthy
 
   customer-service:
     build:
@@ -38,8 +48,8 @@ services:
     ports:
       - 8082:8082
     depends_on:
-      - eureka-server
-      - config-server
+      eureka-server:
+        condition: service_healthy
 
   product-service:
     build:
@@ -48,8 +58,8 @@ services:
     ports:
       - 8083:8083
     depends_on:
-      - eureka-server
-      - config-server
+      eureka-server:
+        condition: service_healthy
 
   order-service:
     build:
@@ -58,10 +68,10 @@ services:
     ports:
       - 8081:8081
     depends_on:
-      - customer-service
-      - product-service
-      - eureka-server
-      - config-server
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_healthy
 
   mail-service:
     build:
@@ -70,8 +80,10 @@ services:
     ports:
       - 8084:8084
     depends_on:
-      - rabbitmq
-      - config-server
+      rabbitmq:
+        condition: service_started
+      eureka-server:
+        condition: service_healthy
 
   maildev:
     image: maildev/maildev
